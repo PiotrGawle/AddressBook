@@ -9,39 +9,28 @@
 
 using namespace std;
 
-struct Contact{
+struct Contact
+{
     int idRecipient, idUser;
     string name, surname, phone, address, email;
 };
-struct User{
+
+struct User
+{
     int idUser;
     string nick, password;
 };
 
-int loadUsersFromFile (vector<User> &users);
+int readUsersFromFile (vector<User> &users);
 int registration (vector<User> &users, int numberOfUsers);
 int logging (vector<User> &users, int numberOfUsers);
-void moveToAddressBook(vector <User> &users, int &numberOfUsers, int idOfLoggedUser);
-void addUserToFile (vector<User> users, int numberOfUsers);
-void overwriteUsersFile (vector<User> users);
-void changePassword (vector<User> &users, int numberOfUsers, int idOfLoggedUser);
-int readContactsFromFile (vector<Contact> &contacts, int idOfLoggedUser);
-void addContact (vector<Contact> &contacts, int &numberOfUserContacts, int idOfLoggedUser);
-void addContactToFile (vector<Contact> &contacts, int numberOfUserContacts);
-void searchByName (vector<Contact> contacts);
-void searchBySurname (vector<Contact> contacts);
-void overwriteRecipientFile (vector<Contact> contacts, vector<Contact>::iterator itr, string action);
-void displayContact (vector<Contact> contacts, vector<Contact>::iterator itr);
-void editContact (vector<Contact> &contacts);
-void deleteContact (vector<Contact> &contacts, int &numberOfUserContacts);
-int checkIDofTheLastContact();
-
+void moveToAddressBook (vector <User> &users, int &numberOfUsers, int idOfLoggedUser);
 
 int main()
 {
     vector <User> users;
     int idOfLoggedUser = 0;
-    int numberOfUsers = loadUsersFromFile (users);
+    int numberOfUsers = readUsersFromFile (users);
     char choice;
 
     while (1)
@@ -71,10 +60,10 @@ int main()
     return 0;
 }
 
-int loadUsersFromFile (vector<User> &users)
+int readUsersFromFile (vector<User> &users)
 {
     fstream file;
-    file.open("users.txt", ios::in);
+    file.open("Users.txt", ios::in);
     if (!file.good())
     {
         return 0;
@@ -99,10 +88,10 @@ int loadUsersFromFile (vector<User> &users)
     return numberOfUsers;
 }
 
-void addUserToFile (vector<User> users, int numberOfUsers)
+void addUsersToFile (vector<User> users, int numberOfUsers)
 {
     fstream file;
-    file.open("users.txt", ios::out | ios::app);
+    file.open("Users.txt", ios::out | ios::app);
 
     if (numberOfUsers == 0)
     {
@@ -120,14 +109,14 @@ void addUserToFile (vector<User> users, int numberOfUsers)
 int registration (vector<User> &users, int numberOfUsers)
 {
     string nick, password;
-    cout << "Enter nick of the User: ";
+    cout << "Enter nick: ";
     cin >> nick;
     vector<User>::iterator itr = users.begin();
     while (itr != users.end())
     {
         if (itr -> nick == nick)
         {
-            cout << "User already exists. Please enter a different nick of the User: ";
+            cout << "User already exists. Enter different nick: ";
             cin >> nick;
             itr = users.begin();
         }
@@ -140,16 +129,16 @@ int registration (vector<User> &users, int numberOfUsers)
     users[numberOfUsers].nick = nick;
     users[numberOfUsers].password = password;
     users[numberOfUsers].idUser = numberOfUsers+1;
-    cout << "User has been created" << endl;
+    cout << "Account has been created." << endl;
     Sleep(1000);
-    addUserToFile (users, numberOfUsers);
+    addUsersToFile (users, numberOfUsers);
     return ++numberOfUsers;
 }
 
 int logging (vector<User> &users, int numberOfUsers)
 {
     string nick, password;
-    cout << "Enter User nick: ";
+    cout << "Enter nick of the User: ";
     cin >> nick;
 
     vector<User>::iterator itr = users.begin();
@@ -159,7 +148,7 @@ int logging (vector<User> &users, int numberOfUsers)
         {
             for (int j=0; j<3; j++)
             {
-                cout << "Enter password (" << 3-j << " chances left): ";
+                cout << "Enter password (remaining " << 3-j << " chances): ";
                 cin >> password;
                 if (itr -> password==password)
                 {
@@ -168,21 +157,21 @@ int logging (vector<User> &users, int numberOfUsers)
                     return itr -> idUser;
                 }
             }
-            cout << "Incorrect password. Wait 3 seconds until next chance." << endl;
+            cout << "Wrong password. Wait 3 sec." << endl;
             Sleep (3000);
             return 0;
         }
         itr++;
     }
-    cout << "There is no user with that nick!" << endl;
+    cout << "There is no such User." << endl;
     Sleep (1500);
     return 0;
 }
 
-void overwriteUsersFile (vector<User> users)
+void overwriteFileUsers (vector<User> users)
 {
     fstream file;
-    file.open("users.txt", ios::out);
+    file.open("Users.txt", ios::out);
     for (int i = 0; i < users.size(); i++)
     {
         if (i == 0)
@@ -209,14 +198,14 @@ void changePassword (vector<User> &users, int numberOfUsers, int idOfLoggedUser)
         if (users[i].idUser == idOfLoggedUser)
         {
             users[i].password=password;
-            overwriteUsersFile(users);
+            overwriteFileUsers(users);
             cout << "Password has been changed." << endl;
             Sleep (1500);
         }
     }
 }
 
-string changeFirstLetter(string text)
+string firstLetterBig (string text)
 {
     if (!text.empty())
     {
@@ -226,7 +215,7 @@ string changeFirstLetter(string text)
     return text;
 }
 
-void overwriteRecipientFile (vector<Contact> contacts, vector<Contact>::iterator itr, string action)
+void overwriteFileRecipients (vector<Contact> contacts, vector<Contact>::iterator itr, string operation)
 {
     fstream file, tempFile;
     file.open("Recipients.txt", ios::in);
@@ -237,7 +226,7 @@ void overwriteRecipientFile (vector<Contact> contacts, vector<Contact>::iterator
     {
         getline(file,idContact,'|');
         getline(file,line);
-        if (itr -> idRecipient == atoi(idContact.c_str()) && action == "edit")
+        if (itr -> idRecipient == atoi(idContact.c_str()) && operation == "edit")
         {
             tempFile << itr -> idRecipient << "|";
             tempFile << itr -> idUser << "|";
@@ -247,7 +236,7 @@ void overwriteRecipientFile (vector<Contact> contacts, vector<Contact>::iterator
             tempFile << itr -> address << "|";
             tempFile << itr -> email << endl;
         }
-        else if (itr -> idRecipient == atoi(idContact.c_str()) && action == "delete")
+        else if (itr -> idRecipient == atoi(idContact.c_str()) && operation == "deleting")
         {
             continue;
         }
@@ -273,13 +262,13 @@ void displayContact (vector<Contact> contacts, vector<Contact>::iterator itr)
     cout << itr -> email << endl << endl;
 }
 
-void editContact (vector<Contact> &contacts)
+void editContact(vector<Contact> &contacts)
 {
     int id;
     bool contactExists = false;
     char choice;
     string newData;
-    cout << "Enter ID of the Contact you want to edit: ";
+    cout << "Enter Id of a contact you want to edit: ";
     cin >> id;
 
     for (vector<Contact>::iterator itr = contacts.begin(); itr != contacts.end(); itr++)
@@ -291,14 +280,14 @@ void editContact (vector<Contact> &contacts)
             {
                 system ("cls");
                 cout << "Contact to be edited: " << endl;
-                displayContact (contacts,itr);
+                displayContact(contacts,itr);
                 cout << endl << "Chose data to edit: " << endl;
                 cout << "1. Name" << endl;
                 cout << "2. Surname" << endl;
                 cout << "3. Phone" << endl;
                 cout << "4. Email" << endl;
                 cout << "5. Address" << endl;
-                cout << "6. Return" << endl;
+                cout << "6. Return to menu" << endl;
                 choice = getch();
                 cin.sync();
 
@@ -308,8 +297,8 @@ void editContact (vector<Contact> &contacts)
                 {
                     cout << "Enter new data: ";
                     cin >> newData;
-                    itr -> name = changeFirstLetter(newData);
-                    overwriteRecipientFile(contacts, itr, "edit");
+                    itr -> name = firstLetterBig(newData);
+                    overwriteFileRecipients(contacts, itr, "editing");
                     cout << "Data has been updated." << endl;
                     Sleep (1000);
                     continue;
@@ -318,8 +307,8 @@ void editContact (vector<Contact> &contacts)
                 {
                     cout << "Enter new data: ";
                     getline(cin,newData);
-                    itr -> surname = changeFirstLetter(newData);
-                    overwriteRecipientFile(contacts, itr, "edit");
+                    itr -> surname = firstLetterBig(newData);
+                    overwriteFileRecipients(contacts, itr, "editing");
                     cout << "Data has been updated." << endl;
                     Sleep (1000);
                     continue;
@@ -328,8 +317,8 @@ void editContact (vector<Contact> &contacts)
                 {
                     cout << "Enter new data: ";
                     getline(cin,newData);
-                    itr -> phone = changeFirstLetter(newData);
-                    overwriteRecipientFile(contacts, itr, "edit");
+                    itr -> phone = firstLetterBig(newData);
+                    overwriteFileRecipients(contacts, itr, "editing");
                     cout << "Data has been updated." << endl;
                     Sleep (1000);
                     continue;
@@ -338,8 +327,8 @@ void editContact (vector<Contact> &contacts)
                 {
                     cout << "Enter new data: ";
                     getline(cin,newData);
-                    itr -> email = changeFirstLetter(newData);
-                    overwriteRecipientFile(contacts, itr, "edit");
+                    itr -> email = firstLetterBig(newData);
+                    overwriteFileRecipients(contacts, itr, "editing");
                     cout << "Data has been updated." << endl;
                     Sleep (1000);
                     continue;
@@ -349,7 +338,7 @@ void editContact (vector<Contact> &contacts)
                     cout << "Enter new data: ";
                     getline(cin,newData);
                     itr -> address = newData;
-                    overwriteRecipientFile(contacts, itr, "edit");
+                    overwriteFileRecipients(contacts, itr, "editing");
                     cout << "Data has been updated." << endl;
                     Sleep (1000);
                     continue;
@@ -360,7 +349,7 @@ void editContact (vector<Contact> &contacts)
                 }
                 default:
                 {
-                    cout << "Wrong choice." << endl;
+                    cout << "Wrong option!" << endl;
                     Sleep (1000);
                     continue;
                 }
@@ -371,31 +360,31 @@ void editContact (vector<Contact> &contacts)
     }
     if(contactExists == false)
     {
-        cout << endl << "There is no contact with that ID!" << endl << endl;
+        cout << endl << "There is no contact with that ID" << endl << endl;
         Sleep (2000);
     }
 }
 
-void deleteContact (vector<Contact> &contacts, int &numberOfUserContacts)
+void deleteContact(vector<Contact> &contacts, int &numberOfUserContacts)
 {
     int id;
     bool contactExists = false;
-    cout << "Enter ID of a Contact you want to delete: ";
+    cout << "Enter ID of a contact you want to be deleted: ";
     cin >> id;
     for (vector<Contact>::iterator itr = contacts.begin(); itr < contacts.end(); itr++)
     {
         if (itr -> idRecipient == id)
         {
             contactExists = true;
-            cout << "Contact to be removed: " << endl;
+            cout << "Contact to be deleted: " << endl;
             displayContact(contacts,itr);
-            cout << "Remove it? Y/N" << endl;
-            if (getch() == 'Y' || getch() == 'y')
+            cout << "Delete it? Y/N" << endl;
+            if (getch() == 'y' || getch() == 'Y')
             {
-                overwriteRecipientFile (contacts, itr, "deleting");
+                overwriteFileRecipients (contacts, itr, "deleting");
                 contacts.erase(itr);
                 numberOfUserContacts--;
-                cout << endl << "Contact has been removed." << endl;
+                cout << endl << "Contact has been deleted" << endl;
                 Sleep(3000);
             }
             else if ((getch() == 'n' || getch() == 'N'))
@@ -404,7 +393,7 @@ void deleteContact (vector<Contact> &contacts, int &numberOfUserContacts)
     }
     if (contactExists == false)
     {
-        cout << endl << "There is no contact with that ID!" << endl << endl;
+        cout << endl << "There is no contact with that ID" << endl << endl;
         Sleep (2000);
     }
 }
@@ -422,13 +411,13 @@ void displayAllContacts (vector<Contact> contacts)
 void searchBySurname (vector<Contact> contacts)
 {
     string surname;
-    cout << "Enter surname of Contact you want to find: ";
+    cout << "Enter surname of a contact you want to find: ";
     cin >> surname;
 
     bool contactExists = false;
     for (vector<Contact>::iterator itr = contacts.begin(); itr != contacts.end(); itr++)
     {
-        if (itr -> surname == changeFirstLetter(surname))
+        if (itr -> surname == firstLetterBig(surname))
         {
             contactExists = true;
             displayContact(contacts,itr);
@@ -447,14 +436,14 @@ void searchByName (vector<Contact> contacts)
     bool contactExists = false;
     for (vector<Contact>::iterator itr = contacts.begin(); itr != contacts.end(); itr++)
     {
-        if (itr -> name == changeFirstLetter(name))
+        if (itr -> name == firstLetterBig(name))
         {
             contactExists = true;
             displayContact(contacts,itr);
         }
     }
     if (contactExists == false)
-        cout << endl << "There is no such Contact!" << endl << endl;
+        cout << endl << "There is no such contact!" << endl << endl;
     system ("pause");
 }
 
@@ -472,18 +461,18 @@ void addContactToFile (vector<Contact> &contacts, int numberOfUserContacts)
     file.close();
 }
 
-int checkHowManyContacts ()
+int checkNumberOfAllContacts ()
 {
     fstream file;
     file.open("Recipients.txt", ios::in);
 
-    if (file.good() == false)
+    if (!file.good())
     {
         return 0;
     }
 
     string line;
-    int numberOfLines=0;
+    int numberOfLines =0;
     while(!file.eof())
     {
         getline(file,line);
@@ -496,9 +485,9 @@ int checkHowManyContacts ()
     return numberOfLines;
 }
 
-int checkIDofTheLastContact()
+int checkIDofLastContact()
 {
-    int numberOfAllContacts = checkIDofTheLastContact();
+    int numberOfAllContacts = checkNumberOfAllContacts();
     if (numberOfAllContacts == 0)
     {
         return 0;
@@ -534,7 +523,7 @@ void addContact (vector<Contact> &contacts, int &numberOfUserContacts, int idOfL
     cout << "Enter phone: ";
     cin.sync();
     getline(cin,phone);
-    cout << "Enter address e-mail: ";
+    cout << "Enter email: ";
     cin.sync();
     cin >> email;
     cout << "Enter address: ";
@@ -542,18 +531,18 @@ void addContact (vector<Contact> &contacts, int &numberOfUserContacts, int idOfL
     getline(cin,address);
 
     contacts.push_back(Contact());
-    int numberOfAllContacts = checkHowManyContacts();
+    int numberOfAllContacts = checkNumberOfAllContacts();
     if (numberOfAllContacts == 0)
     {
         contacts[numberOfUserContacts].idRecipient = 1;
     }
     else
     {
-        contacts[numberOfUserContacts].idRecipient = checkIDofTheLastContact()+1;
+        contacts[numberOfUserContacts].idRecipient = checkIDofLastContact()+1;
     }
     contacts[numberOfUserContacts].idUser=idOfLoggedUser;
-    contacts[numberOfUserContacts].name=changeFirstLetter(name);
-    contacts[numberOfUserContacts].surname=changeFirstLetter(surname);
+    contacts[numberOfUserContacts].name=firstLetterBig(name);
+    contacts[numberOfUserContacts].surname=firstLetterBig(surname);
     contacts[numberOfUserContacts].phone=phone;
     contacts[numberOfUserContacts].email=email;
     contacts[numberOfUserContacts].address=address;
@@ -561,20 +550,20 @@ void addContact (vector<Contact> &contacts, int &numberOfUserContacts, int idOfL
     addContactToFile(contacts, numberOfUserContacts);
     numberOfUserContacts++;
 
-    cout << endl << "Contact has been added to the address book." << endl;
+    cout << endl << "Contact has been added to address book." << endl;
     Sleep(2000);
 }
 
-int readContactsFromFile (vector<Contact> &contacts, int idOfLoggedUser)
+int loadContactsFromFile (vector<Contact> &contacts, int idOfLoggedUser)
 {
     fstream file;
     file.open("Recipients.txt", ios::in);
-    if (file.good() == false)
+    if (!file.good())
     {
         return 0;
     }
     string data,idContact,idUser;
-    int numbrOfContacts=0;
+    int numberOfContacts=0;
 
     while (!file.eof())
     {
@@ -585,19 +574,19 @@ int readContactsFromFile (vector<Contact> &contacts, int idOfLoggedUser)
             if(atoi(idUser.c_str()) == idOfLoggedUser)
             {
                 contacts.push_back(Contact());
-                contacts[numbrOfContacts].idRecipient = atoi(idContact.c_str());
-                contacts[numbrOfContacts].idUser = atoi(idUser.c_str());
+                contacts[numberOfContacts].idRecipient = atoi(idContact.c_str());
+                contacts[numberOfContacts].idUser = atoi(idUser.c_str());
                 getline(file,data,'|');
-                contacts[numbrOfContacts].name = data;
+                contacts[numberOfContacts].name = data;
                 getline(file,data,'|');
-                contacts[numbrOfContacts].surname = data;
+                contacts[numberOfContacts].surname = data;
                 getline(file,data,'|');
-                contacts[numbrOfContacts].phone = data;
+                contacts[numberOfContacts].phone = data;
                 getline(file,data,'|');
-                contacts[numbrOfContacts].email = data;
+                contacts[numberOfContacts].email = data;
                 getline(file,data);
-                contacts[numbrOfContacts].address = data;
-                numbrOfContacts++;
+                contacts[numberOfContacts].address = data;
+                numberOfContacts++;
             }
             else
             {
@@ -610,33 +599,33 @@ int readContactsFromFile (vector<Contact> &contacts, int idOfLoggedUser)
         }
     }
     file.close();
-    return numbrOfContacts;
+    return numberOfContacts;
 }
 
-void moveToAddressBook(vector <User> &users, int &numberOfUsers, int idOfLoggedUser)
+void moveToAddressBook (vector <User> &users, int &numberOfUsers, int idOfLoggedUser)
 {
     vector<Contact> contacts;
     char choice;
 
-    int numberOfUserContacts = readContactsFromFile(contacts, idOfLoggedUser);
+    int numberOfUserContacts = loadContactsFromFile(contacts, idOfLoggedUser);
 
     while (1)
     {
         system ("cls");
-        cout << "1. Add new Contact" << endl;
-        cout << "2. Seatch for contact by name" << endl;
-        cout << "3. Seatch for contact by surname" << endl;
+        cout << "1. Add new contact" << endl;
+        cout << "2. Search contact by namme" << endl;
+        cout << "3. Search contact by surname" << endl;
         cout << "4. Display all contacts" << endl;
-        cout << "5. Delete Contact" << endl;
-        cout << "6. Edit Contact" << endl;
+        cout << "5. Delete contact" << endl;
+        cout << "6. Edit contact" << endl;
         cout << "7. Change password" << endl;
         cout << "8. Log out" << endl;
-        cout << "Choice: ";
+        cout << "Your choice: ";
         cin >> choice;
 
         if (!(choice == '1' || choice == '8' || choice == '7') &&  numberOfUserContacts == 0)
         {
-            cout << "Address book is empty!" << endl << "Add file \"Recipients.txt\" or new contacts."<<endl;
+            cout << "Address Book is empty!" << endl << "Add file \"Recipients.txt\" or add new contacts."<<endl;
             Sleep (4000);
         }
         else if (choice == '1')
