@@ -217,9 +217,9 @@ string firstLetterBig (string text)
 
 void overwriteFileRecipients (vector<Contact> contacts, vector<Contact>::iterator itr, string operation)
 {
-    fstream file, tempFile;
+ fstream file, Tempfile;
     file.open("Recipients.txt", ios::in);
-    tempFile.open("Recipients_temp.txt", ios::out);
+    Tempfile.open("RecipientsT.txt", ios::out);
 
     string line,idContact;
     while(!file.eof())
@@ -228,13 +228,13 @@ void overwriteFileRecipients (vector<Contact> contacts, vector<Contact>::iterato
         getline(file,line);
         if (itr -> idRecipient == atoi(idContact.c_str()) && operation == "edit")
         {
-            tempFile << itr -> idRecipient << "|";
-            tempFile << itr -> idUser << "|";
-            tempFile << itr -> name << "|";
-            tempFile << itr -> surname << "|";
-            tempFile << itr -> phone << "|";
-            tempFile << itr -> address << "|";
-            tempFile << itr -> email << endl;
+            Tempfile << itr -> idRecipient << "|";
+            Tempfile << itr -> idUser << "|";
+            Tempfile << itr -> name << "|";
+            Tempfile << itr -> surname << "|";
+            Tempfile << itr -> phone << "|";
+            Tempfile << itr -> address << "|";
+            Tempfile << itr -> email << endl;
         }
         else if (itr -> idRecipient == atoi(idContact.c_str()) && operation == "deleting")
         {
@@ -242,14 +242,14 @@ void overwriteFileRecipients (vector<Contact> contacts, vector<Contact>::iterato
         }
         else if (atoi(idContact.c_str()))
         {
-            tempFile << idContact + "|" + line << endl;
+            Tempfile << idContact + "|" + line << endl;
         }
     }
     file.close();
-    tempFile.close();
+    Tempfile.close();
 
     remove("Recipients.txt");
-    rename("Recipients_temp.txt","Recipients.txt");
+    rename("RecipientsT.txt","Recipients.txt");
 }
 
 void displayContact (vector<Contact> contacts, vector<Contact>::iterator itr)
@@ -268,7 +268,7 @@ void editContact(vector<Contact> &contacts)
     bool contactExists = false;
     char choice;
     string newData;
-    cout << "Enter Id of a contact you want to edit: ";
+    cout << "Enter ID of a contact you want to edit: ";
     cin >> id;
 
     for (vector<Contact>::iterator itr = contacts.begin(); itr != contacts.end(); itr++)
@@ -276,12 +276,12 @@ void editContact(vector<Contact> &contacts)
         if (itr -> idRecipient == id)
         {
             contactExists == true;
-            while (1)
+            while (true)
             {
                 system ("cls");
                 cout << "Contact to be edited: " << endl;
                 displayContact(contacts,itr);
-                cout << endl << "Chose data to edit: " << endl;
+                cout << endl << "Choose which data you want to edit: " << endl;
                 cout << "1. Name" << endl;
                 cout << "2. Surname" << endl;
                 cout << "3. Phone" << endl;
@@ -298,8 +298,8 @@ void editContact(vector<Contact> &contacts)
                     cout << "Enter new data: ";
                     cin >> newData;
                     itr -> name = firstLetterBig(newData);
-                    overwriteFileRecipients(contacts, itr, "editing");
-                    cout << "Data has been updated." << endl;
+                    overwriteFileRecipients(contacts, itr, "edit");
+                    cout << "Data updated." << endl;
                     Sleep (1000);
                     continue;
                 }
@@ -308,8 +308,8 @@ void editContact(vector<Contact> &contacts)
                     cout << "Enter new data: ";
                     getline(cin,newData);
                     itr -> surname = firstLetterBig(newData);
-                    overwriteFileRecipients(contacts, itr, "editing");
-                    cout << "Data has been updated." << endl;
+                    overwriteFileRecipients(contacts, itr, "edit");
+                    cout << "Data updated." << endl;
                     Sleep (1000);
                     continue;
                 }
@@ -318,18 +318,8 @@ void editContact(vector<Contact> &contacts)
                     cout << "Enter new data: ";
                     getline(cin,newData);
                     itr -> phone = firstLetterBig(newData);
-                    overwriteFileRecipients(contacts, itr, "editing");
-                    cout << "Data has been updated." << endl;
-                    Sleep (1000);
-                    continue;
-                }
-                case '4':
-                {
-                    cout << "Enter new data: ";
-                    getline(cin,newData);
-                    itr -> email = firstLetterBig(newData);
-                    overwriteFileRecipients(contacts, itr, "editing");
-                    cout << "Data has been updated." << endl;
+                    overwriteFileRecipients(contacts, itr, "edit");
+                    cout << "Data updated." << endl;
                     Sleep (1000);
                     continue;
                 }
@@ -337,9 +327,19 @@ void editContact(vector<Contact> &contacts)
                 {
                     cout << "Enter new data: ";
                     getline(cin,newData);
+                    itr -> email = firstLetterBig(newData);
+                    overwriteFileRecipients(contacts, itr, "edit");
+                    cout << "Data updated." << endl;
+                    Sleep (1000);
+                    continue;
+                }
+                case '4':
+                {
+                    cout << "Enter new data: ";
+                    getline(cin,newData);
                     itr -> address = newData;
-                    overwriteFileRecipients(contacts, itr, "editing");
-                    cout << "Data has been updated." << endl;
+                    overwriteFileRecipients(contacts, itr, "edit");
+                    cout << "Data updated." << endl;
                     Sleep (1000);
                     continue;
                 }
@@ -349,7 +349,7 @@ void editContact(vector<Contact> &contacts)
                 }
                 default:
                 {
-                    cout << "Wrong option!" << endl;
+                    cout << "Wrong option" << endl;
                     Sleep (1000);
                     continue;
                 }
@@ -358,9 +358,9 @@ void editContact(vector<Contact> &contacts)
             }
         }
     }
-    if(contactExists == false)
+    if(!contactExists)
     {
-        cout << endl << "There is no contact with that ID" << endl << endl;
+        cout << endl << "There is no contact with that ID!" << endl << endl;
         Sleep (2000);
     }
 }
